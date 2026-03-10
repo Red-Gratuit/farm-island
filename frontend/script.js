@@ -513,17 +513,42 @@ function previewProductMedia(event) {
   
   if (file) {
     const reader = new FileReader();
+    
     reader.onload = function(e) {
+      const fileType = file.type.split('/')[0]; // 'image' ou 'video'
+      
+      if (fileType === 'image') {
+        preview.innerHTML = `
+          <div style="position: relative; display: inline-block;">
+            <img src="${e.target.result}" style="max-width: 200px; max-height: 200px; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.2);">
+            <div style="position: absolute; top: 5px; right: 5px; background: rgba(0,0,0,0.7); color: white; padding: 2px 6px; border-radius: 4px; font-size: 12px;">
+              📸 Photo
+            </div>
+          </div>
+        `;
+      } else if (fileType === 'video') {
+        preview.innerHTML = `
+          <div style="position: relative; display: inline-block;">
+            <video src="${e.target.result}" style="max-width: 200px; max-height: 200px; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.2);" controls>
+            </video>
+            <div style="position: absolute; top: 5px; right: 5px; background: rgba(0,0,0,0.7); color: white; padding: 2px 6px; border-radius: 4px; font-size: 12px;">
+              🎥 Vidéo
+            </div>
+          </div>
+        `;
+      } else {
+        preview.innerHTML = '<p style="color: #ff4444;">❌ Format non supporté</p>';
+        return;
+      }
+      
+      // Sauvegarder les données du média
       currentProductMedia = {
-        type: file.type.startsWith('video/') ? 'video' : 'image',
         data: e.target.result,
+        type: fileType,
         name: file.name
       };
-      
-      preview.innerHTML = currentProductMedia.type === 'video' ?
-        `<video src="${currentProductMedia.data}" controls style="max-width: 200px; max-height: 200px; border-radius: 8px;"></video>` :
-        `<img src="${currentProductMedia.data}" style="max-width: 200px; max-height: 200px; border-radius: 8px;" alt="Aperçu">`;
     };
+    
     reader.readAsDataURL(file);
   } else {
     preview.innerHTML = '';
