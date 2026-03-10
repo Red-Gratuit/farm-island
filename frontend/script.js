@@ -61,8 +61,8 @@ function displayProducts(filter = 'all') {
   container.innerHTML = filtered.map(p => {
     const imageUrl = p.image;
     const mediaElement = p.mediaType === 'video' ? 
-      `<video src="${imageUrl}" muted loop playsinline style="width: 100%; height: 200px; object-fit: cover;"></video>` :
-      `<img src="${imageUrl}" alt="${p.name}" onerror="this.src='bg.jpg'">`;
+      `<video src="${imageUrl}" muted loop playsinline style="width: 100%; height: 200px; object-fit: cover;" data-lazy="true"></video>` :
+      `<img src="${imageUrl}" alt="${p.name}" onerror="this.src='bg.jpg'" loading="lazy">`;
     
     // Badge de catégorie pour les produits personnalisés
     const categoryBadge = p.custom ? 
@@ -84,10 +84,22 @@ function displayProducts(filter = 'all') {
   `;
   }).join('');
   
-  // Démarrer les vidéos dans les cartes
-  container.querySelectorAll('video').forEach(video => {
-    video.play().catch(() => {});
-  });
+  // Optimisation : Démarrer les vidéos uniquement quand elles sont visibles
+  setTimeout(() => {
+    const videos = container.querySelectorAll('video[data-lazy="true"]');
+    const videoObserver = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          const video = entry.target;
+          video.play().catch(() => {});
+          video.removeAttribute('data-lazy');
+          videoObserver.unobserve(video);
+        }
+      });
+    }, { threshold: 0.1 });
+    
+    videos.forEach(video => videoObserver.observe(video));
+  }, 100);
 }
 
 // ==========================================
@@ -106,8 +118,8 @@ function showProduct(id) {
 
   const imageUrl = product.image;
   const mediaElement = product.mediaType === 'video' ? 
-    `<video src="${imageUrl}" controls autoplay muted loop style="width: 100%; max-height: 300px; border-radius: 12px;"></video>` :
-    `<img src="${imageUrl}" alt="${product.name}" style="width: 100%; max-height: 300px; object-fit: cover; border-radius: 12px;" onerror="this.src='bg.jpg'">`;
+    `<video src="${imageUrl}" controls muted preload="metadata" style="width: 100%; max-height: 300px; border-radius: 12px;"></video>` :
+    `<img src="${imageUrl}" alt="${product.name}" style="width: 100%; max-height: 300px; object-fit: cover; border-radius: 12px;" onerror="this.src='bg.jpg'" loading="lazy">`;
 
   const categoryText = product.category === 'douce' ? '💎 Douce' : 
                         product.category === 'dur' ? '👑 Dur' : '🆕 Personnalisée';
@@ -512,6 +524,13 @@ function previewProductMedia(event) {
   const preview = document.getElementById('media-preview');
   
   if (file) {
+    // Vérifier la taille du fichier (max 10MB)
+    if (file.size > 10 * 1024 * 1024) {
+      preview.innerHTML = '<p style="color: #ff4444;">❌ Fichier trop volumineux (max 10MB)</p>';
+      currentProductMedia = null;
+      return;
+    }
+    
     const reader = new FileReader();
     
     reader.onload = function(e) {
@@ -529,7 +548,7 @@ function previewProductMedia(event) {
       } else if (fileType === 'video') {
         preview.innerHTML = `
           <div style="position: relative; display: inline-block;">
-            <video src="${e.target.result}" style="max-width: 200px; max-height: 200px; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.2);" controls>
+            <video src="${e.target.result}" style="max-width: 200px; max-height: 200px; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.2);" controls muted>
             </video>
             <div style="position: absolute; top: 5px; right: 5px; background: rgba(0,0,0,0.7); color: white; padding: 2px 6px; border-radius: 4px; font-size: 12px;">
               🎥 Vidéo
@@ -538,6 +557,7 @@ function previewProductMedia(event) {
         `;
       } else {
         preview.innerHTML = '<p style="color: #ff4444;">❌ Format non supporté</p>';
+        currentProductMedia = null;
         return;
       }
       
@@ -545,8 +565,14 @@ function previewProductMedia(event) {
       currentProductMedia = {
         data: e.target.result,
         type: fileType,
-        name: file.name
+        name: file.name,
+        size: file.size
       };
+    };
+    
+    reader.onerror = function() {
+      preview.innerHTML = '<p style="color: #ff4444;">❌ Erreur de lecture du fichier</p>';
+      currentProductMedia = null;
     };
     
     reader.readAsDataURL(file);

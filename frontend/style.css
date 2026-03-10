@@ -1155,6 +1155,41 @@ input, select, textarea {
 }
 
 /* ==========================================
+   🎥 OPTIMISATION VIDÉO
+   ========================================== */
+video {
+  max-width: 100%;
+  height: auto;
+  object-fit: cover;
+  will-change: transform;
+  transform: translateZ(0);
+  backface-visibility: hidden;
+}
+
+video[data-lazy="true"] {
+  opacity: 0.7;
+  transition: opacity 0.3s ease;
+}
+
+video[data-lazy="true"]:loaded {
+  opacity: 1;
+}
+
+/* Réduire l'impact des animations sur les performances */
+.card {
+  transform: translateZ(0);
+  backface-visibility: hidden;
+  will-change: transform;
+}
+
+/* Optimiser les images */
+img {
+  will-change: transform;
+  transform: translateZ(0);
+  backface-visibility: hidden;
+}
+
+/* ==========================================
    🔐 ADMIN STYLES
    ========================================== */
 .admin-section {
