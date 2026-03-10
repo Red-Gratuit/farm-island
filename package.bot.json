@@ -1,11 +1,10 @@
 {
   "name": "farm-island-telegram-bot",
   "version": "1.0.0",
-  "description": "Farm Island - Mini App Telegram pour Produits Premium",
+  "description": "Farm Island - Bot Telegram",
   "main": "bot.js",
   "scripts": {
-    "start": "node bot.js",
-    "web": "python main.py"
+    "start": "node bot.js"
   },
   "dependencies": {
     "telegraf": "^4.16.3",
