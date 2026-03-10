@@ -123,14 +123,13 @@ def serve_static(path):
 # DÉMARRAGE BOT TELEGRAM
 # ==========================================
 def start_telegram_bot():
-    """Démarrer le bot Telegram dans un thread séparé"""
+    """Démarrer le bot Telegram en Python dans un thread séparé"""
     try:
-        print("🤖 Démarrage du bot Telegram...")
-        subprocess.run(['node', 'bot.js'], check=True)
-    except subprocess.CalledProcessError as e:
-        print(f"❌ Erreur bot Telegram: {e}")
-    except FileNotFoundError:
-        print("❌ Node.js non trouvé. Installez Node.js pour le bot.")
+        # Importer et lancer le bot Python
+        from bot import start_bot_thread
+        start_bot_thread()
+    except Exception as e:
+        print(f"❌ Erreur démarrage bot: {e}")
 
 # ==========================================
 # DÉMARRAGE
