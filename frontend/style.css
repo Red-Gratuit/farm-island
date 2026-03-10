@@ -109,17 +109,36 @@ body {
 .background {
   position: fixed;
   inset: 0;
-  background: url("bg.jpg") center/cover no-repeat;
-  filter: blur(12px) brightness(0.35);
+  background: linear-gradient(135deg, 
+    #1a1a2e 0%, 
+    #16213e 25%, 
+    #0f3460 50%, 
+    #533483 75%, 
+    #e94560 100%);
   z-index: -2;
-  transform: scale(1.1);
+  animation: backgroundFloat 15s ease-in-out infinite;
+}
+
+@keyframes backgroundFloat {
+  0%, 100% { transform: scale(1) rotate(0deg); }
+  50% { transform: scale(1.05) rotate(1deg); }
 }
 
 .background::after {
   content: "";
   position: absolute;
   inset: 0;
-  background: linear-gradient(180deg, rgba(26, 26, 46, 0.85) 0%, rgba(26, 26, 46, 0.75) 50%, rgba(26, 26, 46, 0.85) 100%);
+  background: 
+    radial-gradient(circle at 20% 80%, rgba(233, 69, 96, 0.1) 0%, transparent 50%),
+    radial-gradient(circle at 80% 20%, rgba(83, 52, 131, 0.1) 0%, transparent 50%),
+    radial-gradient(circle at 40% 40%, rgba(15, 52, 96, 0.1) 0%, transparent 50%),
+    linear-gradient(180deg, rgba(26, 26, 46, 0.85) 0%, rgba(26, 26, 46, 0.75) 50%, rgba(26, 26, 46, 0.85) 100%);
+  animation: gradientPulse 20s ease-in-out infinite;
+}
+
+@keyframes gradientPulse {
+  0%, 100% { opacity: 0.7; }
+  50% { opacity: 1; }
 }
 
 .container {
@@ -1607,7 +1626,12 @@ input, select, textarea {
   left: 0;
   right: 0;
   bottom: 0;
-  background: rgba(0, 0, 0, 0.8);
+  background: linear-gradient(135deg, 
+    #1a1a2e 0%, 
+    #16213e 25%, 
+    #0f3460 50%, 
+    #533483 75%, 
+    #e94560 100%);
   backdrop-filter: blur(10px);
   display: flex;
   align-items: center;
