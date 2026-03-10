@@ -2,18 +2,21 @@
 # -*- coding: utf-8 -*-
 """
 Farm Island - Mini App Telegram
-Serveur web simple pour héberger les fichiers statiques
+Serveur web + Bot Telegram combinés
 """
 
 from flask import Flask, send_from_directory, request, jsonify
 import os
 import json
 from datetime import datetime
+import threading
+import subprocess
+import time
 
 app = Flask(__name__, static_folder='frontend')
 
 # ==========================================
-# STOCKAGE DES DONNÉES
+# FICHIER DE DONNÉES
 # ==========================================
 DATA_FILE = 'products.json'
 
@@ -117,6 +120,19 @@ def serve_static(path):
     return send_from_directory('frontend', path)
 
 # ==========================================
+# DÉMARRAGE BOT TELEGRAM
+# ==========================================
+def start_telegram_bot():
+    """Démarrer le bot Telegram dans un thread séparé"""
+    try:
+        print("🤖 Démarrage du bot Telegram...")
+        subprocess.run(['node', 'bot.js'], check=True)
+    except subprocess.CalledProcessError as e:
+        print(f"❌ Erreur bot Telegram: {e}")
+    except FileNotFoundError:
+        print("❌ Node.js non trouvé. Installez Node.js pour le bot.")
+
+# ==========================================
 # DÉMARRAGE
 # ==========================================
 if __name__ == '__main__':
@@ -124,5 +140,10 @@ if __name__ == '__main__':
     if not os.path.exists(DATA_FILE):
         save_products([])
     
+    # Démarrer le bot Telegram en arrière-plan
+    bot_thread = threading.Thread(target=start_telegram_bot, daemon=True)
+    bot_thread.start()
+    
+    # Démarrer le serveur Flask
     port = int(os.environ.get('PORT', 8080))
     app.run(host='0.0.0.0', port=port)
