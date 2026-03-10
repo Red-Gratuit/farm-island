@@ -830,6 +830,8 @@ function setupContactForm() {
 // 🚀 INITIALISATION - API RAILWAY
 // ==========================================
 document.addEventListener('DOMContentLoaded', async () => {
+  // Pas de splash screen - démarrage direct
+  
   displayProducts();
   setupFilters();
   setupContactForm();
