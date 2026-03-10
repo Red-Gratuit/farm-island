@@ -434,53 +434,74 @@ function showCustomConfirm(title, message, onConfirm) {
 }
 
 // ==========================================
-// 📦 FONCTIONS PRODUITS PERSONNALISÉS - LOCALSTORAGE (TEMPORAIRE)
+// 📦 FONCTIONS PRODUITS PERSONNALISÉS - API RAILWAY
 // ==========================================
 let customProducts = [];
 let currentProductMedia = null;
 
-// Charger les produits personnalisés depuis localStorage
-function loadCustomProducts() {
-  const saved = localStorage.getItem('farm_island_products');
-  if (saved) {
-    try {
-      customProducts = JSON.parse(saved);
-    } catch (e) {
+// Charger les produits personnalisés depuis l'API
+async function loadCustomProducts() {
+  try {
+    const response = await fetch('/api/products');
+    const data = await response.json();
+    
+    if (data.success) {
+      customProducts = data.products;
+      console.log('✅ Produits chargés depuis le serveur:', customProducts.length);
+    } else {
+      console.error('❌ Erreur chargement produits:', data.error);
       customProducts = [];
     }
+  } catch (error) {
+    console.error('❌ Erreur API:', error);
+    customProducts = [];
   }
 }
 
-// Sauvegarder les produits personnalisés
-function saveCustomProducts() {
-  localStorage.setItem('farm_island_products', JSON.stringify(customProducts));
-}
-
-// Sauvegarder un produit localement
-function saveProductToServer(product) {
+// Sauvegarder un produit via l'API
+async function saveProductToServer(product) {
   try {
-    customProducts.push({
-      ...product,
-      id: Date.now(),
-      custom: true,
-      created: new Date().toISOString()
+    const response = await fetch('/api/products', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(product)
     });
-    saveCustomProducts();
-    return true;
+    
+    const data = await response.json();
+    
+    if (data.success) {
+      console.log('✅ Produit sauvegardé sur le serveur');
+      return true;
+    } else {
+      console.error('❌ Erreur sauvegarde:', data.error);
+      return false;
+    }
   } catch (error) {
-    console.error('❌ Erreur sauvegarde locale:', error);
+    console.error('❌ Erreur API:', error);
     return false;
   }
 }
 
-// Supprimer un produit localement
-function deleteProductFromServer(productId) {
+// Supprimer un produit via l'API
+async function deleteProductFromServer(productId) {
   try {
-    customProducts = customProducts.filter(p => p.id !== productId);
-    saveCustomProducts();
-    return true;
+    const response = await fetch(`/api/products/${productId}`, {
+      method: 'DELETE'
+    });
+    
+    const data = await response.json();
+    
+    if (data.success) {
+      console.log('✅ Produit supprimé du serveur');
+      return true;
+    } else {
+      console.error('❌ Erreur suppression:', data.error);
+      return false;
+    }
   } catch (error) {
-    console.error('❌ Erreur suppression locale:', error);
+    console.error('❌ Erreur API:', error);
     return false;
   }
 }
@@ -538,12 +559,12 @@ async function addNewProduct() {
     mediaType: currentProductMedia ? currentProductMedia.type : 'image'
   };
   
-  // Sauvegarder localement
-  const success = saveProductToServer(newProduct);
+  // Sauvegarder sur le serveur
+  const success = await saveProductToServer(newProduct);
   
   if (success) {
-    // Recharger les produits depuis localStorage
-    loadCustomProducts();
+    // Recharger les produits depuis le serveur
+    await loadCustomProducts();
     
     // Réinitialiser le formulaire
     document.getElementById('new-product-name').value = '';
@@ -569,12 +590,12 @@ async function deleteCustomProduct(id) {
     return;
   }
   
-  showCustomConfirm('🗑️ Supprimer le produit', 'Êtes-vous sûr de vouloir supprimer ce produit ?', () => {
-    const success = deleteProductFromServer(id);
+  showCustomConfirm('🗑️ Supprimer le produit', 'Êtes-vous sûr de vouloir supprimer ce produit ?', async () => {
+    const success = await deleteProductFromServer(id);
     
     if (success) {
-      // Recharger les produits depuis localStorage
-      loadCustomProducts();
+      // Recharger les produits depuis le serveur
+      await loadCustomProducts();
       refreshProducts();
       showCustomAlert('✅ Succès', 'Produit supprimé avec succès !', 'success');
     } else {
@@ -806,15 +827,15 @@ function setupContactForm() {
 }
 
 // ==========================================
-// 🚀 INITIALISATION - LOCALSTORAGE
+// 🚀 INITIALISATION - API RAILWAY
 // ==========================================
-document.addEventListener('DOMContentLoaded', () => {
+document.addEventListener('DOMContentLoaded', async () => {
   displayProducts();
   setupFilters();
   setupContactForm();
   
-  // Charger les produits personnalisés depuis localStorage
-  loadCustomProducts();
+  // Charger les produits personnalisés depuis le serveur
+  await loadCustomProducts();
   
   // Configurer l'upload de média pour les nouveaux produits
   const mediaUpload = document.getElementById('new-product-media');
@@ -825,5 +846,5 @@ document.addEventListener('DOMContentLoaded', () => {
   // PAS de chargement auto des produits admin
   // Ils seront chargés seulement quand l'utilisateur cliquera sur une fonction admin
   
-  console.log('✅ App initialisée - Produits chargés depuis localStorage !');
+  console.log('✅ App initialisée - Produits chargés depuis le serveur Railway !');
 });
