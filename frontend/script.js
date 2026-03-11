@@ -18,52 +18,18 @@ if (tg) {
 }
 
 // ==========================================
-// 📦 PRODUITS - PRODUITS PAR DÉFAUT
+// 📦 PRODUITS - UNIQUMENT PERSONNALISÉS
 // ==========================================
-const products = [
-  {
-    id: 1,
-    name: "OG Kush",
-    category: "dur",
-    price: "10€",
-    puffs: "1500",
-    description: "Variété classique aux notes terreuses",
-    image: "bg.jpg",
-    mediaType: "image",
-    custom: false
-  },
-  {
-    id: 2,
-    name: "Amnesia Haze",
-    category: "douce", 
-    price: "12€",
-    puffs: "2000",
-    description: "Effet énergétique et citronné",
-    image: "bg.jpg",
-    mediaType: "image",
-    custom: false
-  },
-  {
-    id: 3,
-    name: "Blue Dream",
-    category: "douce",
-    price: "15€",
-    puffs: "2500", 
-    description: "Équilibré aux fruits rouges",
-    image: "bg.jpg",
-    mediaType: "image",
-    custom: false
-  }
-];
+const products = [];  // Plus de produits par défaut, uniquement les produits personnalisés
 
 // ==========================================
-// 📱 AFFICHER LES PRODUITS - TOUS LES PRODUITS
+// 📱 AFFICHER LES PRODUITS - UNIQUMENT PERSONNALISÉS
 // ==========================================
 function displayProducts(filter = 'all') {
   const container = document.getElementById('products-container');
 
-  // Tous les produits : par défaut + personnalisés
-  const allProducts = [...products, ...customProducts];
+  // Uniquement les produits personnalisés
+  const allProducts = [...customProducts];
 
   const filtered = filter === 'all' 
     ? allProducts 
@@ -90,7 +56,7 @@ function displayProducts(filter = 'all') {
   }
 
   container.innerHTML = filtered.map(p => {
-    const imageUrl = p.image;
+    const imageUrl = p.image.startsWith('data:') ? p.image : p.image;
     const mediaElement = p.mediaType === 'video' ? 
       `<video src="${imageUrl}" muted loop playsinline style="width: 100%; height: 200px; object-fit: cover;" data-lazy="true"></video>` :
       `<img src="${imageUrl}" alt="${p.name}" onerror="this.src='bg.jpg'" loading="lazy">`;
@@ -143,12 +109,11 @@ function showProduct(id) {
     } catch (e) {}
   }
 
-  // Chercher dans TOUS les produits (par défaut + personnalisés)
-  const allProducts = [...products, ...customProducts];
-  const product = allProducts.find(p => p.id === id);
+  // Chercher uniquement dans les produits personnalisés
+  const product = customProducts.find(p => p.id === id);
   if (!product) return;
 
-  const imageUrl = product.image;
+  const imageUrl = product.image.startsWith('data:') ? product.image : product.image;
   const mediaElement = product.mediaType === 'video' ? 
     `<video src="${imageUrl}" controls muted preload="metadata" style="width: 100%; max-height: 300px; border-radius: 12px;"></video>` :
     `<img src="${imageUrl}" alt="${product.name}" style="width: 100%; max-height: 300px; object-fit: cover; border-radius: 12px;" onerror="this.src='bg.jpg'" loading="lazy">`;
@@ -341,7 +306,7 @@ function setupFilters() {
 }
 
 // ==========================================
-// 🧭 NAVIGATION TABS - AVEC PROTECTION ADMIN COMPLÈTE
+// 🧭 NAVIGATION TABS - CORRIGÉE
 // ==========================================
 document.addEventListener('DOMContentLoaded', () => {
   const navItems = document.querySelectorAll('.nav-item[data-tab]');
@@ -349,12 +314,6 @@ document.addEventListener('DOMContentLoaded', () => {
   navItems.forEach(btn => {
     btn.addEventListener('click', () => {
       const tab = btn.dataset.tab;
-
-      // Vérification OBLIGATOIRE pour l'onglet admin
-      if (tab === 'admin' && !isAdminAuthenticated) {
-        showAdminLogin();
-        return;
-      }
 
       if (tg?.HapticFeedback) {
         try { tg.HapticFeedback.impactOccurred('light'); } catch (e) {}
@@ -365,11 +324,15 @@ document.addEventListener('DOMContentLoaded', () => {
 
       document.querySelectorAll('.tab-content').forEach(t => {
         t.classList.remove('active');
+        t.style.display = 'none';
         t.scrollTop = 0;
       });
 
       const target = document.getElementById(`tab-${tab}`);
-      if (target) target.classList.add('active');
+      if (target) {
+        target.classList.add('active');
+        target.style.display = 'block';
+      }
     });
   });
 });
