@@ -574,17 +574,16 @@ function showCustomConfirm(title, message, onConfirm) {
 // ==========================================
 let customProducts = [];
 let isAdminAuthenticated = false;
-let currentProductMedia = null;
-
-// Charger les produits personnalisés depuis l'API
 async function loadCustomProducts() {
   try {
+    console.log('🔄 Chargement des produits depuis le serveur...');
     const response = await fetch('/api/products');
     const data = await response.json();
     
     if (data.success) {
       customProducts = data.products;
       console.log('✅ Produits chargés depuis le serveur:', customProducts.length);
+      console.log('📦 Détails produits:', customProducts);
     } else {
       console.error('❌ Erreur chargement produits:', data.error);
       customProducts = [];
@@ -595,28 +594,30 @@ async function loadCustomProducts() {
   }
 }
 
-// Sauvegarder un produit via l'API
+// Sauvegarder un produit sur le serveur
 async function saveProductToServer(product) {
   try {
+    console.log('💾 Envoi du produit au serveur:', product);
     const response = await fetch('/api/products', {
       method: 'POST',
       headers: {
-        'Content-Type': 'application/json',
+        'Content-Type': 'application/json'
       },
       body: JSON.stringify(product)
     });
     
     const data = await response.json();
+    console.log('📨 Réponse du serveur:', data);
     
     if (data.success) {
-      console.log('✅ Produit sauvegardé sur le serveur');
+      console.log('✅ Produit sauvegardé avec succès:', data.product);
       return true;
     } else {
       console.error('❌ Erreur sauvegarde:', data.error);
       return false;
     }
   } catch (error) {
-    console.error('❌ Erreur API:', error);
+    console.error('❌ Erreur API sauvegarde:', error);
     return false;
   }
 }

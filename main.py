@@ -18,7 +18,8 @@ app = Flask(__name__, static_folder='frontend')
 # ==========================================
 # FICHIER DE DONNÉES
 # ==========================================
-DATA_FILE = 'products.json'
+import os
+DATA_FILE = os.path.join(os.getcwd(), 'products.json')
 
 def load_products():
     """Charger les produits depuis le fichier JSON"""
@@ -26,17 +27,22 @@ def load_products():
         try:
             with open(DATA_FILE, 'r', encoding='utf-8') as f:
                 return json.load(f)
-        except:
+        except Exception as e:
+            print(f"❌ Erreur chargement produits: {e}")
             return []
-    return []
+    else:
+        print(f"📁 Fichier {DATA_FILE} non trouvé, création vide")
+        return []
 
 def save_products(products):
     """Sauvegarder les produits dans le fichier JSON"""
     try:
         with open(DATA_FILE, 'w', encoding='utf-8') as f:
             json.dump(products, f, ensure_ascii=False, indent=2)
+        print(f"✅ {len(products)} produits sauvegardés dans {DATA_FILE}")
         return True
-    except:
+    except Exception as e:
+        print(f"❌ Erreur sauvegarde produits: {e}")
         return False
 
 # ==========================================
