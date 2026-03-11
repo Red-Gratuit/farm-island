@@ -652,9 +652,9 @@ function previewProductMedia(event) {
   if (file) {
     console.log('📁 Fichier détecté, taille:', file.size, 'type:', file.type);
     
-    // Vérifier la taille du fichier (max 10MB)
-    if (file.size > 10 * 1024 * 1024) {
-      preview.innerHTML = '<p style="color: #ff4444;">❌ Fichier trop volumineux (max 10MB)</p>';
+    // Vérifier la taille du fichier (max 50MB)
+    if (file.size > 50 * 1024 * 1024) {
+      preview.innerHTML = '<p style="color: #ff4444;">❌ Fichier trop volumineux (max 50MB)</p>';
       currentProductMedia = null;
       return;
     }
