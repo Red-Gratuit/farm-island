@@ -58,7 +58,7 @@ function displayProducts(filter = 'all') {
   container.innerHTML = filtered.map(p => {
     const imageUrl = p.image.startsWith('data:') ? p.image : p.image;
     const mediaElement = p.mediaType === 'video' ? 
-      `<video src="${imageUrl}" muted loop playsinline style="width: 100%; height: 200px; object-fit: cover;" data-lazy="true"></video>` :
+      `<video src="${imageUrl}" autoplay muted loop playsinline style="width: 100%; height: 200px; object-fit: cover;" data-lazy="true"></video>` :
       `<img src="${imageUrl}" alt="${p.name}" onerror="this.src='bg.jpg'" loading="lazy">`;
     
     // Badge de catégorie pour les produits personnalisés
@@ -115,7 +115,7 @@ function showProduct(id) {
 
   const imageUrl = product.image.startsWith('data:') ? product.image : product.image;
   const mediaElement = product.mediaType === 'video' ? 
-    `<video src="${imageUrl}" controls muted preload="metadata" style="width: 100%; max-height: 300px; border-radius: 12px;"></video>` :
+    `<video src="${imageUrl}" autoplay muted loop controls preload="metadata" style="width: 100%; max-height: 300px; border-radius: 12px;"></video>` :
     `<img src="${imageUrl}" alt="${product.name}" style="width: 100%; max-height: 300px; object-fit: cover; border-radius: 12px;" onerror="this.src='bg.jpg'" loading="lazy">`;
 
   const categoryText = product.category === 'douce' ? '💎 Douce' : 
