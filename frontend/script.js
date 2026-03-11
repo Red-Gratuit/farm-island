@@ -734,8 +734,6 @@ async function deleteCustomProduct(id) {
 }
 
 
-let isAdminAuthenticated = false;
-
 // ==========================================
 // 🔐 FONCTIONS CONNEXION ADMIN PERSONNALISÉE
 // ==========================================
