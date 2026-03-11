@@ -248,6 +248,77 @@ function showAdminPanel() {
   }
 }
 
+function showAdminDashboard() {
+  // Masquer tous les onglets
+  document.querySelectorAll('.tab-content').forEach(tab => {
+    tab.style.display = 'none';
+  });
+  
+  // Masquer la navigation
+  document.querySelector('.bottom-nav').style.display = 'none';
+  
+  // Afficher uniquement le panel admin
+  const adminPanel = document.getElementById('tab-admin');
+  if (adminPanel) {
+    adminPanel.style.display = 'block';
+    adminPanel.classList.add('active');
+    
+    // Ajouter un bouton pour quitter l'admin
+    if (!document.getElementById('exit-admin-btn')) {
+      const exitBtn = document.createElement('button');
+      exitBtn.id = 'exit-admin-btn';
+      exitBtn.innerHTML = '🏠 Retour à la Mini App';
+      exitBtn.style.cssText = `
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        background: #ff4444;
+        color: white;
+        border: none;
+        padding: 10px 15px;
+        border-radius: 8px;
+        cursor: pointer;
+        z-index: 1000;
+        font-size: 14px;
+      `;
+      exitBtn.onclick = exitAdminMode;
+      document.body.appendChild(exitBtn);
+    }
+  }
+  
+  // Charger les produits admin
+  loadAdminProducts();
+  updateAdminStats();
+}
+
+function exitAdminMode() {
+  // Supprimer le bouton exit
+  const exitBtn = document.getElementById('exit-admin-btn');
+  if (exitBtn) exitBtn.remove();
+  
+  // Réafficher la navigation
+  document.querySelector('.bottom-nav').style.display = 'flex';
+  
+  // Masquer le panel admin
+  const adminPanel = document.getElementById('tab-admin');
+  if (adminPanel) {
+    adminPanel.style.display = 'none';
+    adminPanel.classList.remove('active');
+  }
+  
+  // Afficher l'onglet menu
+  const menuTab = document.getElementById('tab-menu');
+  if (menuTab) {
+    menuTab.style.display = 'block';
+    menuTab.classList.add('active');
+  }
+  
+  // Réinitialiser l'authentification
+  isAdminAuthenticated = false;
+  
+  showCustomAlert('🏠', 'Retour à la Mini App', 'info');
+}
+
 // ==========================================
 // �🎛️ FILTRES CATÉGORIES
 // ==========================================
@@ -774,6 +845,9 @@ function submitAdminCode() {
     isAdminAuthenticated = true;
     hideAdminLogin();
     showCustomAlert('✅ Authentification réussie', 'Bienvenue dans le panel admin !', 'success');
+    
+    // Afficher le dashboard admin dédié
+    showAdminDashboard();
     
     // Afficher le contenu admin
     const accessDenied = document.getElementById('admin-access-denied');
