@@ -139,10 +139,10 @@ if __name__ == '__main__':
     if not os.path.exists(DATA_FILE):
         save_products([])
     
-    # Démarrer le bot Telegram en arrière-plan
-    bot_thread = threading.Thread(target=start_telegram_bot, daemon=True)
-    bot_thread.start()
+    # Désactiver le bot temporairement pour stabiliser le service
+    # start_telegram_bot()
     
-    # Démarrer le serveur Flask
+    # Démarrer le serveur Flask uniquement
     port = int(os.environ.get('PORT', 8080))
+    print(f"🌐 Démarrage du serveur web sur le port {port}")
     app.run(host='0.0.0.0', port=port)
