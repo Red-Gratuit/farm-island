@@ -18,32 +18,63 @@ if (tg) {
 }
 
 // ==========================================
-// 📦 PRODUITS - VIDES POUR PRODUITS PERSONNALISÉS
+// 📦 PRODUITS - PRODUITS PAR DÉFAUT
 // ==========================================
-const products = [];  // Plus de produits par défaut
+const products = [
+  {
+    id: 1,
+    name: "OG Kush",
+    category: "dur",
+    price: "10€",
+    puffs: "1500",
+    description: "Variété classique aux notes terreuses",
+    image: "bg.jpg",
+    mediaType: "image",
+    custom: false
+  },
+  {
+    id: 2,
+    name: "Amnesia Haze",
+    category: "douce", 
+    price: "12€",
+    puffs: "2000",
+    description: "Effet énergétique et citronné",
+    image: "bg.jpg",
+    mediaType: "image",
+    custom: false
+  },
+  {
+    id: 3,
+    name: "Blue Dream",
+    category: "douce",
+    price: "15€",
+    puffs: "2500", 
+    description: "Équilibré aux fruits rouges",
+    image: "bg.jpg",
+    mediaType: "image",
+    custom: false
+  }
+];
 
 // ==========================================
-// 📱 AFFICHER LES PRODUITS - UNIQUMENT PERSONNALISÉS
+// 📱 AFFICHER LES PRODUITS - TOUS LES PRODUITS
 // ==========================================
 function displayProducts(filter = 'all') {
   const container = document.getElementById('products-container');
 
-  // Uniquement les produits personnalisés
-  const allProducts = [...customProducts];
+  // Tous les produits : par défaut + personnalisés
+  const allProducts = [...products, ...customProducts];
 
   const filtered = filter === 'all' 
     ? allProducts 
     : allProducts.filter(p => {
         if (filter === 'douce') {
-          // Produits personnalisés catégorie douce
-          return p.category === 'douce';
+          return p.category === 'douce' || p.name.toLowerCase().includes('douce');
         }
         if (filter === 'dur') {
-          // Produits personnalisés catégorie dur
-          return p.category === 'dur';
+          return p.category === 'dur' || p.name.toLowerCase().includes('dur');
         }
         if (filter === 'custom') {
-          // Tous les produits personnalisés
           return p.custom;
         }
         return true;
@@ -53,7 +84,7 @@ function displayProducts(filter = 'all') {
     if (filter === 'all') {
       container.innerHTML = '<div class="loading">Aucun produit. Ajoutez-en depuis le panel admin !</div>';
     } else {
-      container.innerHTML = '<div class="loading">Aucun produit dans cette catégorie</div>';
+      container.innerHTML = '<div class="loading">Aucun produit dans cette catégorie.</div>';
     }
     return;
   }
