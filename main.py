@@ -139,10 +139,29 @@ if __name__ == '__main__':
     if not os.path.exists(DATA_FILE):
         save_products([])
     
-    # Désactiver le bot temporairement pour stabiliser le service
-    # start_telegram_bot()
+    # Démarrer le bot Telegram en arrière-plan léger
+    try:
+        import threading
+        import time
+        
+        def run_bot_lightweight():
+            """Bot ultra léger qui ne bloque pas Flask"""
+            try:
+                from bot import start_bot_thread
+                start_bot_thread()
+                print("🤖 Bot Telegram démarré en arrière-plan léger")
+            except Exception as e:
+                print(f"⚠️ Erreur bot (non critique): {e}")
+        
+        # Démarrer le bot dans un thread daemon
+        bot_thread = threading.Thread(target=run_bot_lightweight, daemon=True)
+        bot_thread.start()
+        print("🚀 Thread bot démarré")
+        
+    except Exception as e:
+        print(f"⚠️ Impossible de démarrer le bot: {e}")
     
-    # Démarrer le serveur Flask uniquement
+    # Démarrer le serveur Flask (priorité absolue)
     port = int(os.environ.get('PORT', 8080))
     print(f"🌐 Démarrage du serveur web sur le port {port}")
-    app.run(host='0.0.0.0', port=port)
+    app.run(host='0.0.0.0', port=port, threaded=True)

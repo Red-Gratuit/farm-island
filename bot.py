@@ -62,13 +62,13 @@ def send_photo(chat_id, photo_path, caption, reply_markup=None):
         return send_message(chat_id, caption, reply_markup)
 
 def get_updates(offset=None):
-    """Récupérer les mises à jour du bot"""
-    params = {'timeout': 30}
+    """Récupérer les mises à jour du bot (optimisé)"""
+    params = {'timeout': 20}  # Timeout plus court
     if offset:
         params['offset'] = offset
     
     try:
-        response = requests.get(f"{TELEGRAM_API_URL}/getUpdates", params=params)
+        response = requests.get(f"{TELEGRAM_API_URL}/getUpdates", params=params, timeout=25)
         return response.json()
     except Exception as e:
         print(f"Erreur getUpdates: {e}")
@@ -139,8 +139,8 @@ def handle_message(update):
         send_message(chat_id, 'Utilisez /start pour accéder à la mini-app Farm Island 🌿')
 
 def bot_polling():
-    """Boucle de polling du bot"""
-    print("🤖 Démarrage du bot Telegram en Python...")
+    """Boucle de polling optimisée"""
+    print("🤖 Démarrage du bot Telegram optimisé...")
     offset = 0
     
     while True:
@@ -152,14 +152,15 @@ def bot_polling():
                     handle_message(update)
                     offset = update.get('update_id', 0) + 1
             
-            time.sleep(1)  # Pause pour éviter de spammer l'API
+            # Pause plus longue pour économiser les ressources
+            time.sleep(3)  # 3 secondes au lieu de 1
             
         except KeyboardInterrupt:
             print("🛑 Arrêt du bot...")
             break
         except Exception as e:
             print(f"Erreur dans la boucle du bot: {e}")
-            time.sleep(5)  # Attendre avant de réessayer
+            time.sleep(10)  # Attendre plus longtemps en cas d'erreur
 
 def start_bot_thread():
     """Démarrer le bot dans un thread séparé"""
