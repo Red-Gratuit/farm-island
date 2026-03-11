@@ -143,8 +143,9 @@ function showProduct(id) {
     } catch (e) {}
   }
 
-  // Chercher uniquement dans les produits personnalisés
-  const product = customProducts.find(p => p.id === id);
+  // Chercher dans TOUS les produits (par défaut + personnalisés)
+  const allProducts = [...products, ...customProducts];
+  const product = allProducts.find(p => p.id === id);
   if (!product) return;
 
   const imageUrl = product.image;
@@ -197,9 +198,16 @@ let logoClickTimer = null;
 
 function setupLogoClickHandler() {
   const logo = document.getElementById('admin-logo-trigger');
-  if (!logo) return;
+  if (!logo) {
+    console.log('❌ Logo non trouvé');
+    return;
+  }
+  
+  console.log('✅ Logo trouvé, setup du clic handler');
   
   logo.addEventListener('click', function() {
+    console.log('🖱️ Logo cliqué, compteur:', logoClickCount + 1);
+    
     // Annuler le timer précédent
     if (logoClickTimer) {
       clearTimeout(logoClickTimer);
@@ -209,11 +217,13 @@ function setupLogoClickHandler() {
     
     // Réinitialiser après 2 secondes
     logoClickTimer = setTimeout(() => {
+      console.log('⏰ Timer reset, compteur:', logoClickCount);
       logoClickCount = 0;
     }, 2000);
     
     // Si 3 clics, afficher le panel admin
     if (logoClickCount === 3) {
+      console.log('🎯 3 clics détectés, affichage panel admin');
       logoClickCount = 0;
       showAdminPanel();
       
