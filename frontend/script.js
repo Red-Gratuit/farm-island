@@ -238,10 +238,13 @@ function setupLogoClickHandler() {
 }
 
 function showAdminPanel() {
-  const adminPanel = document.getElementById('admin-panel');
+  const adminPanel = document.getElementById('tab-admin');
   if (adminPanel) {
+    console.log('✅ Panel admin trouvé, affichage en cours');
     adminPanel.style.display = 'block';
     showAdminLogin();
+  } else {
+    console.log('❌ Panel admin non trouvé');
   }
 }
 
