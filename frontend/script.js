@@ -645,10 +645,13 @@ async function deleteProductFromServer(productId) {
 
 // Prévisualiser le média du nouveau produit
 function previewProductMedia(event) {
+  console.log('🖼️ Média sélectionné:', event.target.files[0]?.name);
   const file = event.target.files[0];
   const preview = document.getElementById('media-preview');
   
   if (file) {
+    console.log('📁 Fichier détecté, taille:', file.size, 'type:', file.type);
+    
     // Vérifier la taille du fichier (max 10MB)
     if (file.size > 10 * 1024 * 1024) {
       preview.innerHTML = '<p style="color: #ff4444;">❌ Fichier trop volumineux (max 10MB)</p>';
@@ -659,6 +662,7 @@ function previewProductMedia(event) {
     const reader = new FileReader();
     
     reader.onload = function(e) {
+      console.log('✅ Fichier lu en base64, longueur:', e.target.result.length);
       const fileType = file.type.split('/')[0]; // 'image' ou 'video'
       
       if (fileType === 'image') {
@@ -693,15 +697,19 @@ function previewProductMedia(event) {
         name: file.name,
         size: file.size
       };
+      
+      console.log('💾 Média sauvegardé dans currentProductMedia:', currentProductMedia?.name);
     };
     
     reader.onerror = function() {
+      console.log('❌ Erreur lecture fichier');
       preview.innerHTML = '<p style="color: #ff4444;">❌ Erreur de lecture du fichier</p>';
       currentProductMedia = null;
     };
     
     reader.readAsDataURL(file);
   } else {
+    console.log('📁 Aucun fichier sélectionné');
     preview.innerHTML = '';
     currentProductMedia = null;
   }
@@ -734,6 +742,10 @@ async function addNewProduct() {
     image: currentProductMedia ? currentProductMedia.data : 'bg.jpg',
     mediaType: currentProductMedia ? currentProductMedia.type : 'image'
   };
+  
+  console.log('🆕 Création produit avec média:', currentProductMedia?.name || 'bg.jpg');
+  console.log('📸 Image URL length:', newProduct.image.length);
+  console.log('🎥 MediaType:', newProduct.mediaType);
   
   // Sauvegarder sur le serveur
   const success = await saveProductToServer(newProduct);
@@ -1013,6 +1025,15 @@ document.addEventListener('DOMContentLoaded', async () => {
   setupFilters();
   setupContactForm();
   setupLogoClickHandler(); // Initialiser le clic 3 fois sur le logo
+  
+  // Initialiser le champ média pour l'upload
+  const mediaInput = document.getElementById('new-product-media');
+  if (mediaInput) {
+    mediaInput.addEventListener('change', previewProductMedia);
+    console.log('✅ Champ média initialisé');
+  } else {
+    console.log('❌ Champ média non trouvé');
+  }
   
   // Charger les produits personnalisés depuis le serveur
   await loadCustomProducts();
