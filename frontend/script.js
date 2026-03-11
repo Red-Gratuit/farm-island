@@ -159,7 +159,53 @@ document.addEventListener('click', (e) => {
 });
 
 // ==========================================
-// 🎛️ FILTRES CATÉGORIES
+// � GESTION CLIC 3 FOIS SUR LOGO
+// ==========================================
+let logoClickCount = 0;
+let logoClickTimer = null;
+
+function setupLogoClickHandler() {
+  const logo = document.getElementById('admin-logo-trigger');
+  if (!logo) return;
+  
+  logo.addEventListener('click', function() {
+    // Annuler le timer précédent
+    if (logoClickTimer) {
+      clearTimeout(logoClickTimer);
+    }
+    
+    logoClickCount++;
+    
+    // Réinitialiser après 2 secondes
+    logoClickTimer = setTimeout(() => {
+      logoClickCount = 0;
+    }, 2000);
+    
+    // Si 3 clics, afficher le panel admin
+    if (logoClickCount === 3) {
+      logoClickCount = 0;
+      showAdminPanel();
+      
+      // Feedback haptique si disponible
+      if (tg?.HapticFeedback) {
+        try {
+          tg.HapticFeedback.notificationOccurred('success');
+        } catch (e) {}
+      }
+    }
+  });
+}
+
+function showAdminPanel() {
+  const adminPanel = document.getElementById('admin-panel');
+  if (adminPanel) {
+    adminPanel.style.display = 'block';
+    showAdminLogin();
+  }
+}
+
+// ==========================================
+// �🎛️ FILTRES CATÉGORIES
 // ==========================================
 function setupFilters() {
   const buttons = document.querySelectorAll('.cat');
@@ -449,6 +495,7 @@ function showCustomConfirm(title, message, onConfirm) {
 // 📦 FONCTIONS PRODUITS PERSONNALISÉS - API RAILWAY
 // ==========================================
 let customProducts = [];
+let isAdminAuthenticated = false;
 let currentProductMedia = null;
 
 // Charger les produits personnalisés depuis l'API
@@ -886,18 +933,29 @@ document.addEventListener('DOMContentLoaded', async () => {
   displayProducts();
   setupFilters();
   setupContactForm();
+  setupLogoClickHandler(); // Initialiser le clic 3 fois sur le logo
   
   // Charger les produits personnalisés depuis le serveur
   await loadCustomProducts();
   
-  // Configurer l'upload de média pour les nouveaux produits
-  const mediaUpload = document.getElementById('new-product-media');
-  if (mediaUpload) {
-    mediaUpload.addEventListener('change', previewProductMedia);
-  }
+  // Initialiser l'audio
+  const audio = document.getElementById('intro-audio');
+  const soundBtn = document.getElementById('sound-toggle');
   
-  // PAS de chargement auto des produits admin
-  // Ils seront chargés seulement quand l'utilisateur cliquera sur une fonction admin
+  if (audio && soundBtn) {
+    soundBtn.addEventListener('click', () => {
+      if (audioPlaying) {
+        audio.pause();
+        soundBtn.textContent = '🔇';
+        audioPlaying = false;
+      } else {
+        audio.play().catch(() => {});
+        soundBtn.textContent = '🔊';
+        audioPlaying = true;
+        audioStarted = true;
+      }
+    });
+  }
   
   console.log('✅ App initialisée - Produits chargés depuis le serveur Railway !');
 });
