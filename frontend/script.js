@@ -722,10 +722,9 @@ function previewProductMedia(event) {
       } else if (fileType === 'video') {
         preview.innerHTML = `
           <div style="position: relative; display: inline-block;">
-            <video src="${e.target.result}" style="max-width: 200px; max-height: 200px; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.2);" controls muted>
-            </video>
+            <video src="${e.target.result}" autoplay muted loop playsinline style="max-width: 200px; max-height: 200px; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.2);"></video>
             <div style="position: absolute; top: 5px; right: 5px; background: rgba(0,0,0,0.7); color: white; padding: 2px 6px; border-radius: 4px; font-size: 12px;">
-              🎥 Vidéo
+              🎥 Vidéo (autoplay)
             </div>
           </div>
         `;
