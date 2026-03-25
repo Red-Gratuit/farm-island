@@ -338,74 +338,6 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 // ==========================================
-// 🎵 GESTION MUSIQUE - DÉMARRE AU 1ER CLIC
-// ==========================================
-let audioStarted = false;
-let audioPlaying = false;
-
-document.addEventListener('DOMContentLoaded', () => {
-  const audio = document.getElementById('intro-audio');
-  const soundBtn = document.getElementById('sound-toggle');
-
-  if (!audio) return;
-
-  // Fonction pour démarrer l'audio au PREMIER clic
-  function startAudioOnFirstClick() {
-    if (!audioStarted) {
-      audio.muted = false;
-      audio.play()
-        .then(() => {
-          console.log('🎵 Musique démarrée au premier clic !');
-          audioStarted = true;
-          audioPlaying = true;
-          soundBtn.innerHTML = '🔊';
-        })
-        .catch(err => {
-          console.log('⏸️ Audio bloqué par le navigateur:', err);
-        });
-    }
-  }
-
-  // DÉMARRER AU 1ER CLIC N'IMPORTE OÙ sur la page
-  document.body.addEventListener('click', startAudioOnFirstClick, { once: true });
-  document.body.addEventListener('touchstart', startAudioOnFirstClick, { once: true });
-
-  // Bouton son pour TOGGLE (ON/OFF)
-  soundBtn.addEventListener('click', (e) => {
-    e.preventDefault();
-    e.stopPropagation();
-
-    // Si l'audio n'a jamais été démarré, on le démarre
-    if (!audioStarted) {
-      audio.muted = false;
-      audio.play()
-        .then(() => {
-          audioStarted = true;
-          audioPlaying = true;
-          soundBtn.innerHTML = '🔊';
-        })
-        .catch(() => {});
-    } 
-    // Sinon, on toggle ON/OFF
-    else {
-      if (audio.paused) {
-        audio.play().catch(() => {});
-        soundBtn.innerHTML = '🔊';
-        audioPlaying = true;
-      } else {
-        audio.pause();
-        soundBtn.innerHTML = '🔇';
-        audioPlaying = false;
-      }
-    }
-
-    if (tg?.HapticFeedback) {
-      try { tg.HapticFeedback.impactOccurred('light'); } catch (e) {}
-    }
-  });
-});
-
-// ==========================================
 // 🎬 SPLASH SCREEN AVEC BELLE ANIMATION
 // ==========================================
 window.addEventListener('load', () => {
@@ -1049,11 +981,13 @@ document.addEventListener('DOMContentLoaded', async () => {
         audio.pause();
         soundBtn.textContent = '🔇';
         audioPlaying = false;
+        console.log('🔇 Musique mise en pause');
       } else {
         audio.play().catch(() => {});
         soundBtn.textContent = '🔊';
         audioPlaying = true;
         audioStarted = true;
+        console.log('🔊 Musique démarrée');
       }
     });
   }
