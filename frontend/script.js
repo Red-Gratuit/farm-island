@@ -156,6 +156,71 @@ document.addEventListener('click', (e) => {
 });
 
 // ==========================================
+// 🎵 GESTION MUSIQUE - DÉMARRAGE AUTO + CONTRÔLE
+// ==========================================
+let audioStarted = false;
+let audioPlaying = false;
+
+// Démarrer l'audio au premier clic sur la page
+function startAudioOnFirstInteraction() {
+  if (!audioStarted) {
+    const audio = document.getElementById('intro-audio');
+    if (audio) {
+      audio.muted = false;
+      audio.play().then(() => {
+        console.log('🎵 Musique démarrée automatiquement !');
+        audioStarted = true;
+        audioPlaying = true;
+        const soundBtn = document.getElementById('sound-toggle');
+        if (soundBtn) soundBtn.textContent = '🔊';
+      }).catch(err => {
+        console.log('⏸️ Audio bloqué par le navigateur:', err);
+      });
+    }
+  }
+}
+
+// Initialiser au chargement de la page
+document.addEventListener('DOMContentLoaded', () => {
+  // Démarrer audio au premier clic/touch sur la page
+  document.body.addEventListener('click', startAudioOnFirstInteraction, { once: true });
+  document.body.addEventListener('touchstart', startAudioOnFirstInteraction, { once: true });
+  
+  // Initialiser le bouton de contrôle
+  const soundBtn = document.getElementById('sound-toggle');
+  if (soundBtn) {
+    soundBtn.addEventListener('click', (e) => {
+      e.stopPropagation(); // Empêcher le déclenchement du premier clic
+      
+      const audio = document.getElementById('intro-audio');
+      if (!audio) return;
+      
+      if (audioPlaying) {
+        audio.pause();
+        soundBtn.textContent = '🔇';
+        audioPlaying = false;
+        console.log('🔇 Musique mise en pause');
+      } else {
+        if (!audioStarted) {
+          // Premier démarrage manuel si auto n'a pas marché
+          audio.muted = false;
+          audio.play().then(() => {
+            audioStarted = true;
+            audioPlaying = true;
+          }).catch(() => {});
+        } else {
+          // Reactivation
+          audio.play().catch(() => {});
+          audioPlaying = true;
+        }
+        soundBtn.textContent = '🔊';
+        console.log('🔊 Musique réactivée');
+      }
+    });
+  }
+});
+
+// ==========================================
 // � GESTION CLIC 3 FOIS SUR LOGO
 // ==========================================
 let logoClickCount = 0;
@@ -530,6 +595,27 @@ async function loadCustomProducts() {
 async function saveProductToServer(product) {
   try {
     console.log('💾 Envoi du produit au serveur:', product);
+    
+    // Si le média est en base64, l'uploader d'abord
+    if (product.image && product.image.startsWith('data:')) {
+      console.log('📤 Upload du média en cours...');
+      
+      // Convertir base64 en blob et uploader
+      const response = await fetch('/api/upload', {
+        method: 'POST',
+        body: createFormDataFromBase64(product.image, product.mediaType)
+      });
+      
+      const uploadResult = await response.json();
+      if (uploadResult.success) {
+        // Remplacer l'image base64 par l'URL du fichier uploadé
+        product.image = uploadResult.url;
+        console.log('✅ Média uploadé:', uploadResult.url);
+      } else {
+        console.error('❌ Erreur upload média:', uploadResult.error);
+      }
+    }
+    
     const response = await fetch('/api/products', {
       method: 'POST',
       headers: {
@@ -552,6 +638,32 @@ async function saveProductToServer(product) {
     console.error('❌ Erreur API sauvegarde:', error);
     return false;
   }
+}
+
+// Créer FormData à partir de base64
+function createFormDataFromBase64(base64Data, mediaType) {
+  // Extraire les données base64
+  const header = base64Data.split(',')[0];
+  const data = base64Data.split(',')[1];
+  
+  // Convertir en blob
+  const byteCharacters = atob(data);
+  const byteNumbers = new Array(byteCharacters.length);
+  for (let i = 0; i < byteCharacters.length; i++) {
+    byteNumbers[i] = byteCharacters.charCodeAt(i);
+  }
+  const byteArray = new Uint8Array(byteNumbers);
+  
+  const mimeType = mediaType === 'video' ? 'video/mp4' : 'image/jpeg';
+  const blob = new Blob([byteArray], { type: mimeType });
+  
+  // Créer FormData
+  const formData = new FormData();
+  const ext = mediaType === 'video' ? 'mp4' : 'jpg';
+  const filename = `product_${Date.now()}.${ext}`;
+  formData.append('file', blob, filename);
+  
+  return formData;
 }
 
 // Supprimer un produit via l'API
@@ -970,27 +1082,6 @@ document.addEventListener('DOMContentLoaded', async () => {
   
   // Charger les produits personnalisés depuis le serveur
   await loadCustomProducts();
-  
-  // Initialiser l'audio
-  const audio = document.getElementById('intro-audio');
-  const soundBtn = document.getElementById('sound-toggle');
-  
-  if (audio && soundBtn) {
-    soundBtn.addEventListener('click', () => {
-      if (audioPlaying) {
-        audio.pause();
-        soundBtn.textContent = '🔇';
-        audioPlaying = false;
-        console.log('🔇 Musique mise en pause');
-      } else {
-        audio.play().catch(() => {});
-        soundBtn.textContent = '🔊';
-        audioPlaying = true;
-        audioStarted = true;
-        console.log('🔊 Musique démarrée');
-      }
-    });
-  }
   
   console.log('✅ App initialisée - Produits chargés depuis le serveur Railway !');
 });

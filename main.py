@@ -5,13 +5,15 @@ Farm Island - Mini App Telegram
 Serveur web + Bot Telegram combinés
 """
 
-from flask import Flask, send_from_directory, request, jsonify
 import os
 import json
+from flask import Flask, send_from_directory, request, jsonify
 from datetime import datetime
 import threading
 import subprocess
 import time
+import base64
+from werkzeug.utils import secure_filename
 
 app = Flask(__name__, static_folder='frontend')
 
@@ -48,6 +50,49 @@ def save_products(products):
 # ==========================================
 # ROUTES API
 # ==========================================
+@app.route('/api/upload', methods=['POST'])
+def upload_media():
+    """Uploader un fichier média (photo/vidéo)"""
+    try:
+        if 'file' not in request.files:
+            return jsonify({'success': False, 'error': 'Aucun fichier'}), 400
+        
+        file = request.files['file']
+        if file.filename == '':
+            return jsonify({'success': False, 'error': 'Nom de fichier vide'}), 400
+        
+        # Sécuriser le nom du fichier
+        filename = secure_filename(file.filename)
+        
+        # Créer le dossier uploads s'il n'existe pas
+        upload_dir = os.path.join(os.getcwd(), 'uploads')
+        if not os.path.exists(upload_dir):
+            os.makedirs(upload_dir)
+        
+        # Sauvegarder le fichier
+        file_path = os.path.join(upload_dir, filename)
+        file.save(file_path)
+        
+        # Retourner l'URL du fichier
+        file_url = f"/uploads/{filename}"
+        
+        print(f"✅ Fichier uploadé: {file_path}")
+        return jsonify({
+            'success': True, 
+            'url': file_url,
+            'filename': filename
+        })
+        
+    except Exception as e:
+        print(f"❌ Erreur upload: {e}")
+        return jsonify({'success': False, 'error': str(e)}), 500
+
+@app.route('/uploads/<filename>')
+def uploaded_file(filename):
+    """Servir les fichiers uploadés"""
+    upload_dir = os.path.join(os.getcwd(), 'uploads')
+    return send_from_directory(upload_dir, filename)
+
 @app.route('/api/products', methods=['GET'])
 def get_products():
     """Récupérer tous les produits personnalisés"""
@@ -66,6 +111,37 @@ def add_product():
             if not product_data.get(field):
                 return jsonify({'success': False, 'error': f'Champ {field} requis'}), 400
         
+        # Si une image est fournie en base64, l'uploader d'abord
+        image_url = product_data.get('image', 'bg.jpg')
+        if image_url and image_url.startswith('data:'):
+            # Convertir base64 en fichier et l'uploader
+            try:
+                # Extraire les données base64
+                header, data = image_url.split(',', 1)
+                file_data = base64.b64decode(data)
+                
+                # Créer le nom de fichier
+                media_type = product_data.get('mediaType', 'image')
+                ext = 'mp4' if media_type == 'video' else 'jpg'
+                filename = f"product_{int(time.time())}.{ext}"
+                
+                # Sauvegarder le fichier
+                upload_dir = os.path.join(os.getcwd(), 'uploads')
+                if not os.path.exists(upload_dir):
+                    os.makedirs(upload_dir)
+                
+                file_path = os.path.join(upload_dir, filename)
+                with open(file_path, 'wb') as f:
+                    f.write(file_data)
+                
+                # Utiliser l'URL du fichier sauvegardé
+                image_url = f"/uploads/{filename}"
+                print(f"✅ Média sauvegardé: {file_path}")
+                
+            except Exception as e:
+                print(f"❌ Erreur sauvegarde média: {e}")
+                image_url = 'bg.jpg'  # Fallback
+        
         # Ajouter le produit
         products = load_products()
         new_product = {
@@ -75,7 +151,7 @@ def add_product():
             'price': product_data['price'],  # Garder en texte pour "1G: 20€, 2G: 35€..."
             'puffs': product_data.get('puffs', 'Non spécifié'),
             'description': product_data.get('description', ''),
-            'image': product_data.get('image', 'bg.jpg'),
+            'image': image_url,
             'mediaType': product_data.get('mediaType', 'image'),
             'custom': True,
             'created': datetime.now().isoformat()
