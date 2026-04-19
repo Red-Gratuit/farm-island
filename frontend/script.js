@@ -63,9 +63,11 @@ function displayProducts(filter = 'all') {
     
     // Badge de catégorie pour les produits personnalisés
     const categoryBadge = p.custom ? 
-      (p.category === 'douce' ? '<div class="category-badge douce">💎</div>' :
-       p.category === 'dur' ? '<div class="category-badge dur">👑</div>' :
-       '<div class="category-badge custom">🆕</div>') : '';
+      (p.category === 'douce' ? '<div class="category-badge douce">###</div>' :
+       p.category === 'dur' ? '<div class="category-badge dur">###</div>' :
+       '<div class="category-badge custom">###</div>') : '';
+    
+    console.log(`Carte générée - ID: ${p.id}, Nom: ${p.name}`);
     
     return `
     <div class="card" onclick="showProduct(${p.id})">
@@ -76,7 +78,7 @@ function displayProducts(filter = 'all') {
         <span class="card-price">${p.price}</span>
         <span class="card-puffs">${p.puffs}</span>
       </div>
-      ${p.custom ? '<div class="custom-badge">🆕</div>' : ''}
+      ${p.custom ? '<div class="custom-badge">###</div>' : ''}
     </div>
   `;
   }).join('');
@@ -103,6 +105,9 @@ function displayProducts(filter = 'all') {
 // 🎯 AFFICHER DÉTAILS PRODUIT (MODAL) - PRODUITS PERSONNALISÉS
 // ==========================================
 function showProduct(id) {
+  console.log(`Clique sur la carte - ID demandé: ${id}`);
+  console.log(`Produits disponibles:`, customProducts.map(p => ({id: p.id, name: p.name})));
+  
   if (tg?.HapticFeedback) {
     try {
       tg.HapticFeedback.impactOccurred('medium');
@@ -111,7 +116,11 @@ function showProduct(id) {
 
   // Chercher uniquement dans les produits personnalisés
   const product = customProducts.find(p => p.id === id);
-  if (!product) return;
+  console.log(`Produit trouvé:`, product);
+  if (!product) {
+    console.error(`Produit avec ID ${id} non trouvé!`);
+    return;
+  }
 
   const imageUrl = product.image.startsWith('data:') ? product.image : product.image;
   const mediaElement = product.mediaType === 'video' ? 
